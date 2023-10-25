@@ -1,0 +1,30 @@
+%pendulum_main
+ global m L b g
+
+ m = 1;
+ L = 2;
+ b = 0.5;
+ g = 10;
+
+ tspan = 0:0.1:20;
+
+ %solve for each initial condition x0
+
+ x0 = [0.5,0];
+ [t,pendu] = ode23(@pendulum,tspan,x0);
+ animate(t,pendu(:,1))
+ pendu(:,1) %is the solution to differential equation
+ x0 = [3.14,0];
+ [t,pendu] = ode23(@pendulum,tspan,x0);
+ animate(t,pendu(:,1))
+ 
+ x0 = [0,5];
+ [t,pendu] = ode23(@pendulum,tspan,x0);
+ animate(t,pendu(:,1))
+
+function psoln = pendulum(t,theta)
+    global m L b g
+    %first derivative second derivative
+    psoln = [theta(2) ; (b*theta(2)+m*g*sin(theta(1)))/(-m*L)];
+    
+end
