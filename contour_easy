@@ -1,0 +1,8 @@
+clc
+clear all;
+close all;
+
+f = @(x,y) 3*x^2*y+y;
+
+fcontour(f,'LevelList',linspace(-100,100,20))
+title('Contour Plot 10.18')
