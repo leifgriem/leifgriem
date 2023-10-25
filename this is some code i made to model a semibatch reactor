@@ -1,0 +1,106 @@
+%%%this is some code i made to model a semibatch reactor
+%%%iterative newton method calculus!
+%%%2 feeds!
+%%%2 stream flow rates with different on/off functions!
+%%%4 components all reacting mathematically!
+%%%and it plots it on matlab!
+
+clc;
+clear;
+clf
+close all
+kr = 3; %rxn 1 forward forward rate constant
+k2f = 0.1; %equilibrium forward constant
+k2r = 0.05; %equilibrium reverse constant
+
+Va = 1; %vol rate of a, L/min
+Vb = 0.6; %vol rate of b, L/min
+caf = 0.2; %feed concentration of a mol/L
+cbf = 0.45; %feed concentration of b mol/L
+
+dt = 1; %time step (sec)
+numsteps = 300; %number of time steps to take
+times = (0:dt:dt*(numsteps));
+V = zeros(1,numsteps+1); %creates array for time series of V;
+ca = zeros(1,numsteps+1); %creates array for time series of ca;
+cb = zeros(1,numsteps+1); %creates array for time series of cb;
+cc = zeros(1,numsteps+1); %creates array for time series of cc;
+cd = zeros(1,numsteps+1); %creates array for time series of cc;
+
+timea = 50; %how long a fed into reactor
+timeb = 50; %how long b fed into reactor
+timebcancel = 10; % adjust code for b coming in late
+
+V(1)=10;
+ca(1)=0;
+cb(1)=0;
+cc(1)=0;
+cd(1)=0;
+
+for i=1:numsteps
+
+    
+    %3 stages of operation
+    %1. Before stream B turns on
+    %2. After Stream B turns on
+    %3. After both streams turn on
+
+    %Iterative computation of V
+    if i<10
+        V(i+1)=V(i) + dt*(Va);
+        ca(i+1)=ca(i) + Va*caf/V(i);
+        cb(i+1)=cb(i);
+        cc(i+1)=cc(i);
+        cd(i+1)=cc(i);
+
+    elseif i>=10 && i<=11
+        V(i+1)=V(i) + dt*(Va);
+        ca(i+1)=ca(i) + Va*caf/V(i);
+        cb(i+1)=cb(i) + Vb*cbf/V(i);
+        cc(i+1)=cc(i);
+        cd(i+1)=cc(i);
+
+    elseif i>=11 && i<=50
+        V(i+1)=V(i) + dt*(Va+Vb);
+        ca(i+1)=ca(i) + Va*caf/V(i) - kr*ca(i)*cb(i);
+        cb(i+1)=cb(i) + Vb*cbf/V(i) - kr*ca(i)*cb(i);
+        cc(i+1)=cc(i) + kr*ca(i)*cb(i)-k2f*cc(i)+k2r*cd(i);
+        cd(i+1)=cd(i) + k2f*cc(i)-k2r*cd(i);
+
+    else
+        V(i+1)=V(i);
+        ca(i+1)=ca(i) - kr*ca(i)*cb(i);
+        cb(i+1)=cb(i) - kr*ca(i)*cb(i);
+        cc(i+1)=cc(i) + kr*ca(i)*cb(i)-k2f*cc(i)+k2r*cd(i);
+        cd(i+1)=cd(i) + k2f*cc(i)-k2r*cd(i);
+    end
+end
+
+clf
+
+plot(times,V)
+xlabel('t (min)'),ylabel('V (L)')
+title('Volume v. Time')
+axis([0 300 0 90])
+
+%A and B
+figure
+%f2 = figure;
+plot(times,ca,times,cb)
+legend('Ca','Cb')
+xlabel('t (min)'),ylabel('Concentration (mol/L)')
+title('Concentration of A and B v. Time')
+axis([0 300 0 0.2])
+
+%B and C
+figure
+plot(times,cc,times,cd)
+legend('Cc','Cd')
+xlabel('t (min)'),ylabel('Concentration (mol/L)')
+title('Concentration of C and D v. Time')
+axis([0 300 0 0.5])
+% 
+% 
+% 
+% 
+% 
